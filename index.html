@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Security SOW Generator | Microsoft Partner Tool</title>
+    <script>
+        // Clarity tag — loaded conditionally on analytics consent
+        var CLARITY_TAG = "wnzk94jn88";
+        function loadClarity() {
+            (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", CLARITY_TAG);
+        }
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f3f2f1; color: #323130; min-height: 100vh; }
+
+        /* Analytics Consent Banner */
+        .analytics-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; background: #eff6fc; border-bottom: 1px solid #c7e0f4; padding: 10px 32px; font-size: 13px; color: #323130; flex-wrap: wrap; }
+        .analytics-banner.hidden { display: none; }
+        .analytics-banner.confirmed { padding: 6px 32px; background: #f3f2f1; border-bottom: 1px solid #edebe9; }
+        .analytics-banner-text { display: flex; flex-direction: column; gap: 2px; }
+        .analytics-banner-text strong { font-size: 13px; font-weight: 700; color: #0078d4; }
+        .analytics-banner-text span { font-size: 12px; color: #605e5c; line-height: 1.5; }
+        .analytics-status { font-size: 12px; color: #605e5c; }
+        .analytics-banner-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn-analytics { padding: 6px 16px; border-radius: 2px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .btn-analytics-accept { background: #0078d4; color: white; border: 1px solid #0078d4; }
+        .btn-analytics-accept:hover { background: #106ebe; }
+        .btn-analytics-decline { background: white; color: #323130; border: 1px solid #8a8886; }
+        .btn-analytics-decline:hover { background: #f3f2f1; }
+
+        .header { background: #0078d4; color: white; padding: 16px 32px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+        .main { display: grid; grid-template-columns: 430px 1fr; min-height: calc(100vh - 70px); }
+
+        .form-panel { background: white; border-right: 1px solid #edebe9; overflow-y: auto; max-height: calc(100vh - 70px); position: sticky; top: 0; }
+
+        .form-section { padding: 20px 24px; border-bottom: 1px solid #edebe9; }
+        .form-section h2 { font-size: 12px; font-weight: 700; color: #0078d4; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; cursor: default; user-select: none; }
+        .form-section.collapsible h2 { cursor: pointer; }
+        .form-section h2 .chevron { margin-left: auto; font-size: 14px; font-weight: 400; color: #605e5c; transition: transform 0.2s; display: inline-block; flex-shrink: 0; }
+        .form-section h2.collapsed .chevron { transform: rotate(-90deg); }
+        .section-body.collapsed { display: none; }
+        .form-section h2::before { content: attr(data-step); background: #0078d4; color: white; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+        .section-note { font-size: 12px; color: #605e5c; margin-bottom: 10px; line-height: 1.5; }
+
+        .field { margin-bottom: 14px; }
+        .field label { display: block; font-size: 13px; font-weight: 600; color: #323130; margin-bottom: 5px; }
+        .field label .req { color: #d13438; margin-left: 2px; }
+        .field input, .field select { width: 100%; padding: 7px 10px; border: 1px solid #8a8886; border-radius: 2px; font-size: 13px; font-family: inherit; color: #323130; background: white; }
+        .field input:focus, .field select:focus { outline: none; border-color: #0078d4; box-shadow: 0 0 0 1px #0078d4; }
+
+        .checkbox-group { display: flex; flex-direction: column; gap: 6px; }
+        .checkbox-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border: 1px solid #edebe9; border-radius: 4px; cursor: pointer; transition: background 0.1s; }
+        .checkbox-item:hover { background: #f3f2f1; }
+        .checkbox-item input[type="checkbox"] { width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0; cursor: pointer; accent-color: #0078d4; }
+        .checkbox-item .item-title { font-size: 13px; font-weight: 600; color: #323130; line-height: 1.3; }
+        .checkbox-item .item-desc { font-size: 11px; color: #605e5c; margin-top: 2px; line-height: 1.4; }
+
+        .tier-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+        .tier-1 { background: #dff6dd; color: #107c10; }
+        .tier-2 { background: #fff4ce; color: #8a6914; }
+        .tier-3 { background: #fce4e4; color: #a4262c; }
+
+        .select-all-btn { font-size: 12px; color: #0078d4; border: none; background: none; cursor: pointer; padding: 0 0 8px 0; text-decoration: underline; display: block; }
+
+        .form-section.locked { opacity: 0.55; pointer-events: none; position: relative; }
+        .form-section.locked .select-all-btn { pointer-events: none; }
+        .checkbox-item.license-locked { opacity: 0.45; pointer-events: none; }
+        .checkbox-item.license-locked::after { content: '🔒 Purview Suite'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 10px; color: #8a6914; background: #fff4ce; padding: 2px 8px; border-radius: 3px; border: 1px solid #f0d060; }
+        .checkbox-item { position: relative; }
+        .license-lock-banner { display: none; background: #fff4ce; border: 1px solid #f0d060; border-left: 4px solid #8a6914; padding: 8px 12px; border-radius: 0 4px 4px 0; font-size: 12px; color: #323130; line-height: 1.4; margin-bottom: 10px; pointer-events: auto; }
+        .form-section.locked .license-lock-banner { display: block; }
+        .license-lock-banner.visible { display: block; }
+        .checkbox-item.ms-gated { opacity: 0.4; pointer-events: none; }
+        .checkbox-item.ms-gated::after { content: 'Requires Ongoing Managed Services'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 10px; color: #5c2d91; background: #f3eeff; padding: 2px 8px; border-radius: 3px; border: 1px solid #c8a8e9; }
+
+        .generate-section { padding: 20px 24px; background: #f3f2f1; position: sticky; bottom: 0; border-top: 1px solid #edebe9; }
+        .btn-generate { width: 100%; padding: 12px; background: #0078d4; color: white; border: none; border-radius: 2px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .btn-generate:hover { background: #106ebe; }
+
+        .output-panel { padding: 32px; overflow-y: auto; max-height: calc(100vh - 70px); }
+        .placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80%; color: #8a8886; text-align: center; gap: 12px; }
+        .placeholder h3 { font-size: 16px; font-weight: 400; }
+        .placeholder p { font-size: 13px; }
+
+        .sow-document { display: none; }
+        .sow-document.visible { display: block; }
+
+        .sow-toolbar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-action { padding: 8px 16px; border: 1px solid #8a8886; background: white; border-radius: 2px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; color: #323130; transition: background 0.1s; }
+        .btn-action:hover { background: #f3f2f1; }
+        .btn-action.primary { background: #0078d4; color: white; border-color: #0078d4; }
+        .btn-action.primary:hover { background: #106ebe; }
+
+        .sow-paper { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.12); max-width: 820px; margin: 0 auto; padding: 60px; }
+
+        .sow-header { border-bottom: 3px solid #0078d4; padding-bottom: 24px; margin-bottom: 32px; }
+        .sow-header .top-row { display: flex; justify-content: space-between; align-items: flex-start; }
+        .sow-header .partner-name { font-size: 20px; font-weight: 700; color: #323130; }
+        .sow-header .partner-sub { font-size: 12px; color: #605e5c; margin-top: 3px; }
+        .msft-badge { background: #0078d4; color: white; padding: 4px 10px; font-size: 11px; font-weight: 700; letter-spacing: 1px; border-radius: 2px; }
+        .sow-title { font-size: 26px; font-weight: 700; color: #0078d4; margin: 20px 0 6px; }
+        .sow-subtitle { font-size: 14px; color: #605e5c; }
+        .sow-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; background: #f3f2f1; padding: 16px; border-radius: 4px; }
+        .meta-label { font-weight: 700; color: #323130; font-size: 12px; }
+        .meta-value { color: #605e5c; font-size: 12px; }
+
+        .sow-section { margin-bottom: 28px; }
+        .sow-section h2 { font-size: 15px; font-weight: 700; color: #0078d4; border-left: 3px solid #0078d4; padding-left: 10px; margin-bottom: 12px; }
+        .sow-section h3 { font-size: 13px; font-weight: 700; color: #323130; margin: 14px 0 6px; }
+        .sow-section p { font-size: 13px; line-height: 1.65; color: #323130; }
+        .sow-section ul { list-style: none; padding: 0; }
+        .sow-section ul li { font-size: 13px; line-height: 1.65; color: #323130; padding: 3px 0 3px 16px; position: relative; }
+        .sow-section ul li::before { content: "▸"; color: #0078d4; position: absolute; left: 0; font-size: 11px; top: 5px; }
+
+        .sow-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+        .sow-table th { background: #0078d4; color: white; padding: 8px 12px; text-align: left; font-weight: 600; }
+        .sow-table td { padding: 8px 12px; border-bottom: 1px solid #edebe9; color: #323130; vertical-align: top; }
+        .sow-table tr:nth-child(even) td { background: #f9f8f7; }
+
+        .notice-box { background: #eff6fc; border: 1px solid #c7e0f4; border-left: 4px solid #0078d4; padding: 12px 14px; border-radius: 0 4px 4px 0; font-size: 12px; color: #323130; line-height: 1.5; margin-top: 12px; }
+
+        .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 20px; }
+        .sig-block { font-size: 12px; line-height: 1.8; }
+        .sig-block .sig-party { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+        .sig-line { border-top: 1px solid #323130; padding-top: 4px; margin-top: 20px; }
+
+        /* Disclaimer Modal */
+        .disclaimer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .disclaimer-modal { background: white; border-radius: 6px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); max-width: 560px; width: 94vw; display: flex; flex-direction: column; }
+        .disclaimer-modal-header { background: #0078d4; color: white; padding: 16px 24px; border-radius: 6px 6px 0 0; }
+        .disclaimer-modal-header h2 { font-size: 16px; font-weight: 700; margin: 0; }
+        .disclaimer-modal-body { padding: 24px; font-size: 13px; line-height: 1.7; color: #323130; display: flex; flex-direction: column; gap: 12px; }
+        .disclaimer-modal-body p { margin: 0; }
+        .disclaimer-oii-notice { background: #fff4ce; border: 1px solid #f0d060; border-left: 4px solid #8a6914; padding: 10px 14px; border-radius: 0 4px 4px 0; font-size: 12px; color: #323130; }
+        .disclaimer-modal-footer { padding: 16px 24px; border-top: 1px solid #edebe9; display: flex; justify-content: flex-end; }
+        .btn-acknowledge { padding: 10px 24px; background: #0078d4; color: white; border: none; border-radius: 2px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .btn-acknowledge:hover { background: #106ebe; }
+
+        @media print {
+            .header, .form-panel, .sow-toolbar, .tree-overlay { display: none !important; }
+            .main { display: block; }
+            .output-panel { padding: 0; max-height: none; overflow: visible; }
+            .sow-document { display: block !important; }
+            .sow-paper { box-shadow: none; padding: 30px; }
+        }
+
+        /* Decision Tree Modal */
+        .tree-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .tree-overlay.open { display: flex; }
+        .tree-modal { background: white; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); max-width: 780px; width: 94vw; max-height: 88vh; display: flex; flex-direction: column; }
+        .tree-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #edebe9; }
+        .tree-modal-header h2 { font-size: 16px; font-weight: 700; color: #0078d4; margin: 0; }
+        .tree-modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: #605e5c; padding: 4px 8px; border-radius: 4px; }
+        .tree-modal-close:hover { background: #f3f2f1; }
+        .tree-modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+        .tree-node { margin-left: 20px; border-left: 2px solid #edebe9; padding-left: 14px; margin-bottom: 2px; }
+        .tree-node.root { margin-left: 0; border-left: none; padding-left: 0; }
+        .tree-toggle { cursor: pointer; user-select: none; padding: 5px 0; font-size: 13px; color: #323130; display: flex; align-items: center; gap: 6px; }
+        .tree-toggle:hover { color: #0078d4; }
+        .tree-toggle .arrow { display: inline-block; width: 14px; font-size: 10px; color: #8a8886; transition: transform 0.15s; }
+        .tree-toggle .arrow.collapsed { transform: rotate(-90deg); }
+        .tree-children { overflow: hidden; }
+        .tree-children.collapsed { display: none; }
+        .tree-leaf { padding: 4px 0 4px 20px; font-size: 12px; color: #605e5c; display: flex; align-items: center; gap: 6px; }
+        .tree-leaf .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .tree-leaf .status-dot.included { background: #107c10; }
+        .tree-leaf .status-dot.locked { background: #d13438; }
+        .tree-leaf .status-dot.available { background: #8a8886; }
+        .tree-legend { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid #edebe9; margin-bottom: 12px; font-size: 11px; color: #605e5c; }
+        .tree-legend span { display: flex; align-items: center; gap: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <svg width="30" height="30" viewBox="0 0 32 32">
+        <rect x="1" y="1" width="14" height="14" fill="#f25022"/>
+        <rect x="17" y="1" width="14" height="14" fill="#7fba00"/>
+        <rect x="1" y="17" width="14" height="14" fill="#00a4ef"/>
+        <rect x="17" y="17" width="14" height="14" fill="#ffb900"/>
+    </svg>
+    <div>
+        <h1>Microsoft Purview Data Security: SOW Generator</h1>
+        <p>Channel Partner Tool · V1</p>
+    </div>
+</div>
+
+<!-- Analytics Consent Banner -->
+<div class="analytics-banner" id="analyticsBanner">
+    <div class="analytics-banner-text">
+        <strong>Analytics Consent</strong>
+        <span>Optional usage analytics — With your permission, this site can load Microsoft Clarity to understand aggregated usage patterns and improve the experience.<br>
+        Declining keeps the assistant fully functional and prevents Clarity from loading in your browser.</span>
+    </div>
+    <div class="analytics-banner-actions">
+        <button class="btn-analytics btn-analytics-decline" onclick="setAnalyticsConsent(false)">Decline</button>
+        <button class="btn-analytics btn-analytics-accept" onclick="setAnalyticsConsent(true)">Accept</button>
+    </div>
+</div>
+
+<div class="main">
+
+    <!-- FORM PANEL -->
+    <div class="form-panel">
+
+        <!-- Step 1: Engagement Details -->
+        <div class="form-section">
+            <h2 data-step="1">Engagement Details</h2>
+            <div class="field">
+                <label>Partner Company Name <span class="req">*</span></label>
+                <input type="text" id="partnerName" placeholder="e.g. Contoso Technologies">
+            </div>
+            <div class="field">
+                <label>Customer Name <span class="req">*</span></label>
+                <input type="text" id="customerName" placeholder="e.g. Fabrikam Inc.">
+            </div>
+            <div class="field">
+                <label>Prepared By</label>
+                <input type="text" id="preparedBy" placeholder="e.g. Jane Smith">
+            </div>
+            <div class="field">
+                <label>Estimated Start Date</label>
+                <input type="date" id="startDate">
+            </div>
+            <div class="field">
+                <label>Engagement Duration</label>
+                <select id="duration">
+                    <option value="">Select...</option>
+                    <option value="2 weeks">2 Weeks</option>
+                    <option value="4 weeks (1 month)">4 Weeks (1 Month)</option>
+                    <option value="6 weeks">6 Weeks</option>
+                    <option value="8 weeks (2 months)">8 Weeks (2 Months)</option>
+                    <option value="3 months">3 Months</option>
+                    <option value=">6 months (Managed Services)">>6 Months (Managed Services)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Step 2: Customer Environment -->
+        <div class="form-section">
+            <h2 data-step="2">Customer Environment</h2>
+            <div class="field">
+                <label>Number of Licensed Users</label>
+                <select id="userCount">
+                    <option value="">Select...</option>
+                    <option value="1–50 users">1–50 users</option>
+                    <option value="51–150 users">51–150 users</option>
+                    <option value="151–300 users">151–300 users</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Microsoft 365 License</label>
+                <select id="license" onchange="updateLicenseGating()">
+                    <option value="">Select...</option>
+                    <option value="Microsoft 365 Business Premium / Microsoft 365 E3" selected>M365 Business Premium / M365 E3</option>
+                    <option value="Microsoft 365 Business Premium / Microsoft 365 E3 + Purview Suite Add-on">M365 Business Premium / M365 E3 + Purview Suite Add-on</option>
+                    <option value="Microsoft 365 Business Premium / Microsoft 365 E3 + Defender &amp; Purview Suite Add-ons">M365 Business Premium / M365 E3 + Defender &amp; Purview Suite Add-ons</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Customer Industry</label>
+                <select id="industry">
+                    <option value="">Select...</option>
+                    <option value="Financial Services">Financial Services</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Legal">Legal</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Government / Public Sector">Government / Public Sector</option>
+                    <option value="Retail / E-Commerce">Retail / E-Commerce</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Professional Services">Professional Services</option>
+                    <option value="Education">Education</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>MIP Maturity</label>
+                <select id="maturity">
+                    <option value="">Select...</option>
+                    <option value="No existing deployment (Greenfield)">No existing deployment (Greenfield)</option>
+                    <option value="Labels created, not yet deployed">Labels created, not yet deployed</option>
+                    <option value="Labels deployed, no auto-labeling">Labels deployed, no auto-labeling</option>
+                    <option value="Mixed - partial deployment">Mixed - partial deployment</option>
+                    <option value="Mature deployment, optimization needed">Mature deployment, optimization needed</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>DLP Maturity</label>
+                <select id="dlpMaturity">
+                    <option value="">Select...</option>
+                    <option value="No existing policies (Greenfield)">No existing policies (Greenfield)</option>
+                    <option value="Policies created, not yet deployed">Policies created, not yet deployed</option>
+                    <option value="Mixed - partial deployment">Mixed - partial deployment</option>
+                    <option value="Mature deployment, optimization needed">Mature deployment, optimization needed</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Step 3: Priority 1 Services -->
+        <div class="form-section">
+            <h2 data-step="3">Data Security Services: Foundation <span class="tier-tag tier-1">Priority 1</span></h2>
+            <p class="section-note">Core labeling and DLP capabilities included with M365 Business Premium. Recommended for all customers regardless of maturity.</p>
+            <button class="select-all-btn" onclick="toggleAll('p1')">Select All / Deselect All</button>
+            <div class="checkbox-group" id="p1">
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Enable Microsoft Purview Audit Logging" data-effort="4–8 hrs" data-tier="1" data-license="bp">
+                    <div>
+                        <div class="item-title">Enable Audit Logging</div>
+                        <div class="item-desc">Activate Purview audit log, a required prerequisite for all MIP features and compliance reporting.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Design sensitivity label taxonomy (Public, General, Confidential, Highly Confidential)" data-effort="12–20 hrs" data-tier="1" data-license="bp">
+                    <div>
+                        <div class="item-title">Sensitivity Label Taxonomy Design</div>
+                        <div class="item-desc">Define label hierarchy aligned to customer's data classification needs: Public → General → Confidential → Highly Confidential.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Create and configure sensitivity labels in Microsoft Purview portal" data-effort="8–12 hrs" data-tier="1" data-license="bp">
+                    <div>
+                        <div class="item-title">Sensitivity Label Creation &amp; Configuration</div>
+                        <div class="item-desc">Configure labels with encryption, content marking (headers/footers/watermarks), and access restrictions.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Deploy label policies to target user groups" data-effort="4–8 hrs" data-tier="1" data-license="bp">
+                    <div>
+                        <div class="item-title">Label Policy Deployment</div>
+                        <div class="item-desc">Publish label policies to targeted security groups, including default label and justification settings.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Configure mandatory labeling and default label enforcement" data-effort="4–6 hrs" data-tier="1" data-license="bp">
+                    <div>
+                        <div class="item-title">Mandatory &amp; Default Label Enforcement</div>
+                        <div class="item-desc">Require users to label all documents and emails before saving/sending; set a default label for unlabeled content.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="End-user training and awareness sessions on sensitivity labeling" data-effort="4–8 hrs" data-tier="1" data-license="bp">
+                    <div>
+                        <div class="item-title">End-User Training &amp; Adoption</div>
+                        <div class="item-desc">Deliver training covering label usage, justification prompts, and change management best practices.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Enable sensitivity labels for files in SharePoint Online and OneDrive for Business" data-effort="4–6 hrs" data-tier="1" data-license="bp">
+                    <div>
+                        <div class="item-title">Enable Sensitivity Labels for SharePoint &amp; OneDrive</div>
+                        <div class="item-desc">Activate sensitivity label support for Office files stored in SharePoint and OneDrive so labels persist and are enforceable.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Apply sensitivity labels to Microsoft Teams, SharePoint sites, and Microsoft 365 Groups (container labels)" data-effort="4–8 hrs" data-tier="1" data-license="bp">
+                    <div>
+                        <div class="item-title">Container Label Configuration</div>
+                        <div class="item-desc">Apply sensitivity labels to Teams, SharePoint sites, and M365 Groups to enforce privacy, access, and sharing restrictions.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Create and deploy DLP policies for Exchange Online, SharePoint Online, and OneDrive for Business — including simulation mode testing, false positive tuning, and alert/incident management configuration" data-effort="16–28 hrs" data-tier="1" data-license="bp">
+                    <div>
+                        <div class="item-title">DLP Policies: Exchange, SharePoint &amp; OneDrive</div>
+                        <div class="item-desc">Configure DLP policies for Exchange, SharePoint, and OneDrive to detect and restrict sensitive content sharing. Covers policy simulation and tuning, alert dashboards, and incident notification setup. Included with M365 Business Premium.</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Step 4: Priority 2 Services -->
+        <div class="form-section">
+            <h2 data-step="4">Data Security Services: Intermediate <span class="tier-tag tier-2">Priority 2</span></h2>
+            <div class="license-lock-banner">🔒 Some services in this section require the <strong>Purview Suite add-on</strong>. Locked items are indicated individually. Change the license selection above to unlock.</div>
+            <p class="section-note">Data retention, governance, and DLP operational readiness. Per the Microsoft Data Security Deployment Guide, these capabilities are the recommended next step after foundational labeling and DLP.</p>
+            <div class="checkbox-group" id="p2">
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Create and configure retention policies for Exchange Online (expandable to other workloads)" data-effort="8–12 hrs" data-tier="2" data-license="purview">
+                    <div>
+                        <div class="item-title">Retention Policy: Exchange Online</div>
+                        <div class="item-desc">Deploy retention policies for Exchange mailboxes to retain or delete email content based on compliance requirements; expandable to SharePoint, OneDrive, and Teams.</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+        <div class="form-section">
+            <h2 data-step="5">Data Security Services: Advanced <span class="tier-tag tier-3">Priority 3</span></h2>
+            <div class="license-lock-banner">🔒 Some services in this section require the <strong>Purview Suite add-on</strong>. Locked items are indicated individually. Change the license selection above to unlock.</div>
+            <p class="section-note">Advanced protection capabilities. Some items require Microsoft Purview Suite add-on (marked with 🔒 when locked).</p>
+            <button class="select-all-btn" onclick="toggleAll('p3')">Select All / Deselect All</button>
+            <div class="checkbox-group" id="p3">
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Configure custom sensitive information types (SITs)" data-effort="12–20 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">Custom Sensitive Information Types (SITs)</div>
+                        <div class="item-desc">Create custom SITs using regex, keyword dictionaries, or Exact Data Match (EDM) for industry-specific data patterns.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Deploy client-side auto-labeling (recommended and automatic) in Office apps" data-effort="8–12 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">Client-Side Auto-Labeling in Office Apps</div>
+                        <div class="item-desc">Configure Word, Excel, PowerPoint, and Outlook to recommend or auto-apply labels when sensitive content is detected.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Deploy service-side auto-labeling policies for SharePoint, OneDrive, and Exchange" data-effort="12–20 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">Service-Side Auto-Labeling Policies</div>
+                        <div class="item-desc">Run simulation and enforcement policies to automatically label content at rest in SharePoint, OneDrive, and Exchange Online.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Configure label-based encryption and Azure Rights Management (RMS) permissions" data-effort="12–20 hrs" data-tier="3" data-license="bp">
+                    <div>
+                        <div class="item-title">Label-Based Encryption &amp; RMS</div>
+                        <div class="item-desc">Configure Azure Rights Management encryption for Confidential/Highly Confidential labels with co-author/viewer permission models.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Configure trainable classifiers for intelligent content detection" data-effort="12–20 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">Trainable Classifiers</div>
+                        <div class="item-desc">Leverage pre-built or custom trainable classifiers for intelligent detection beyond pattern-based matching.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Enable Content Explorer and Activity Explorer for labeling visibility" data-effort="4–6 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">Content Explorer &amp; Activity Explorer</div>
+                        <div class="item-desc">Enable visibility into labeled content locations and user labeling activity across Microsoft 365 services.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Deploy Microsoft Purview Information Protection (AIP) on-premises scanner for file shares and SharePoint Server" data-effort="20–30 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">On-Premises Scanner Deployment</div>
+                        <div class="item-desc">Install and configure the Purview scanner to classify and label content on on-premises file servers and SharePoint Server.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Implement Double Key Encryption (DKE) for highest-sensitivity regulated data" data-effort="20–30 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">Double Key Encryption (DKE)</div>
+                        <div class="item-desc">Deploy DKE for ultra-sensitive content that must remain inaccessible even to Microsoft, required for certain regulated industries.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Integrate Microsoft Purview MIP SDK with custom or third-party line-of-business applications" data-effort="40+ hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">MIP SDK / LOB Application Integration</div>
+                        <div class="item-desc">Extend MIP labeling to custom or third-party applications using the Microsoft Purview MIP SDK.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Configure sensitivity label analytics and compliance dashboards in Microsoft Purview" data-effort="8–12 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">Advanced Analytics &amp; Compliance Reporting</div>
+                        <div class="item-desc">Set up label analytics dashboards and automated compliance reports for leadership, audit, and regulatory purposes.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Deploy DLP policies for Endpoint devices (Windows and macOS) — including simulation mode testing, false positive tuning, and alert/incident management configuration" data-effort="16–28 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">DLP for Endpoints</div>
+                        <div class="item-desc">Extend DLP to managed Windows and macOS devices to restrict copy, print, upload, and transfer of sensitive content. Covers device onboarding validation, policy simulation and tuning, and workload-specific alert and escalation configuration.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Deploy DLP policies for Microsoft Teams chat and channel messages — including simulation mode testing, false positive tuning, and alert/incident management configuration" data-effort="10–16 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">DLP for Teams</div>
+                        <div class="item-desc">Detect and block sensitive content in Teams chat and channel messages in real time. Covers simulation testing across internal and guest scenarios before enforcement, and alert configuration for policy match incidents.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Deploy DLP policies for Microsoft 365 Copilot interactions — including simulation mode testing, false positive tuning, and alert/incident management configuration" data-effort="10–16 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">DLP for Copilot</div>
+                        <div class="item-desc">Apply DLP controls to Copilot prompts and responses to prevent sensitive data exposure in AI interactions. Requires two rules — one for SITs, one for sensitivity labels — with simulation testing across prompt and response scenarios before enforcement go-live, and Copilot-specific alert configuration.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Deploy DLP policies for Microsoft Edge inline web traffic and unmanaged AI applications" data-effort="8–12 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">DLP for Microsoft Edge / Inline Web Traffic</div>
+                        <div class="item-desc">Prevent sensitive data from being sent to unmanaged AI apps (e.g., ChatGPT, Gemini) via Edge for Business browser enforcement.</div>
+                    </div>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" value="Activate Microsoft Purview Data Security Posture Management (DSPM)" data-effort="8–12 hrs" data-tier="3" data-license="purview">
+                    <div>
+                        <div class="item-title">Activate DSPM</div>
+                        <div class="item-desc">Enable Data Security Posture Management for visibility into data risks, oversharing patterns, and AI readiness across the organization.</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Step 6: Engagement Type & Managed Services -->
+        <div class="form-section">
+            <h2 data-step="6">Engagement Type</h2>
+            <div class="field">
+                <label>Service Delivery Model</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="engType_deploy">
+                        <div>
+                            <div class="item-title">One-Time Deployment</div>
+                            <div class="item-desc">A defined-scope deployment engagement with a fixed start and end date.</div>
+                        </div>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="engType_hypercare">
+                        <div>
+                            <div class="item-title">30-Day Hypercare</div>
+                            <div class="item-desc">Post-deployment support period for issue resolution, user questions, and minor tuning.</div>
+                        </div>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="engType_managed" onchange="updateManagedServicesGating()">
+                        <div>
+                            <div class="item-title">Ongoing Managed Services</div>
+                            <div class="item-desc">Recurring partner-managed support covering monitoring, tuning, and incident response.</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="field">
+                <label>Managed Service Options</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item ms-gated" id="ms_monitor_item">
+                        <input type="checkbox" id="ms_monitor" disabled>
+                        <div>
+                            <div class="item-title">Monthly Health Monitoring</div>
+                            <div class="item-desc">Monthly review of MIP label coverage, auto-labeling effectiveness, DLP policy match rates, false positive trends, and user compliance.</div>
+                        </div>
+                    </label>
+                    <label class="checkbox-item ms-gated" id="ms_tuning_item">
+                        <input type="checkbox" id="ms_tuning" disabled>
+                        <div>
+                            <div class="item-title">Quarterly Policy Tuning</div>
+                            <div class="item-desc">Quarterly review and update of sensitivity label policies, SITs, auto-labeling rules, and DLP policies to address false positives, business changes, and new data types.</div>
+                        </div>
+                    </label>
+                    <label class="checkbox-item ms-gated" id="ms_incidents_item">
+                        <input type="checkbox" id="ms_incidents" disabled>
+                        <div>
+                            <div class="item-title">Incident Response Support</div>
+                            <div class="item-desc">Priority support for data security incidents including mislabeled content, DLP policy violations, false positive spikes, and policy exception requests.</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="generate-section">
+            <div id="effortSummary" style="font-size:13px;color:#323130;margin-bottom:10px;padding:8px 12px;background:#eff6fc;border-radius:4px;display:none;">
+                <strong>Estimated Total Effort:</strong> <span id="effortRange"></span>
+            </div>
+            <button class="btn-generate" onclick="generateSOW()">⚡ Generate SOW Document</button>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+                <button class="btn-action" onclick="showDecisionTree()" style="flex:1;justify-content:center;">🌳 Decision Tree</button>
+                <button class="btn-action" onclick="document.getElementById('jsonFileInput').click()" style="flex:1;justify-content:center;">📂 Import JSON</button>
+                <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importJSON(this)">
+            </div>
+            <button class="btn-action" onclick="resetAll()" style="width:100%;justify-content:center;margin-top:8px;">🧹 Reset All</button>
+        </div>
+
+    </div><!-- /form-panel -->
+
+    <!-- OUTPUT PANEL -->
+    <div class="output-panel">
+
+        <div class="placeholder" id="placeholder">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <rect x="15" y="8" width="50" height="64" rx="4" stroke="#0078d4" stroke-width="2.5" fill="none"/>
+                <line x1="25" y1="24" x2="55" y2="24" stroke="#0078d4" stroke-width="2"/>
+                <line x1="25" y1="33" x2="55" y2="33" stroke="#0078d4" stroke-width="2"/>
+                <line x1="25" y1="42" x2="45" y2="42" stroke="#0078d4" stroke-width="2"/>
+                <line x1="25" y1="51" x2="50" y2="51" stroke="#0078d4" stroke-width="2"/>
+                <line x1="25" y1="60" x2="40" y2="60" stroke="#0078d4" stroke-width="2"/>
+            </svg>
+            <h3>Your SOW will appear here</h3>
+            <p>Fill in the form on the left and click <strong>Generate SOW Document</strong></p>
+        </div>
+
+        <div class="sow-document" id="sowDoc">
+            <!-- Populated by JS -->
+        </div>
+
+    </div>
+
+</div><!-- /main -->
+
+<!-- Decision Tree Overlay -->
+<div class="tree-overlay" id="treeOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="tree-modal">
+        <div class="tree-modal-header">
+            <h2>Service Decision Tree</h2>
+            <button class="tree-modal-close" onclick="document.getElementById('treeOverlay').classList.remove('open')">&times;</button>
+        </div>
+        <div class="tree-modal-body" id="treeBody"></div>
+    </div>
+</div>
+
+<script>
+function setAnalyticsConsent(accepted) {
+    sessionStorage.setItem('analyticsConsent', accepted ? 'accepted' : 'declined');
+    showAnalyticsStatus(accepted ? 'accepted' : 'declined');
+    if (accepted) loadClarity();
+}
+
+function showAnalyticsStatus(consent) {
+    var banner = document.getElementById('analyticsBanner');
+    banner.classList.add('confirmed');
+    var icon = consent === 'accepted' ? '✅' : '🚫';
+    var label = consent === 'accepted' ? 'Accepted Telemetry' : 'Declined Telemetry';
+    banner.innerHTML = '<span class="analytics-status">' + icon + ' <strong>' + label + '</strong> — Analytics preference recorded for this session. Refresh the page to update your choice.</span>';
+}
+
+// On load: always show full consent banner — choice is per page load, not per session
+// (sessionStorage is written after choice but not read back on load, so refresh always resets)
+
+function toggleAll(groupId) {
+    const boxes = [...document.querySelectorAll('#' + groupId + ' input[type="checkbox"]')]
+        .filter(b => !b.closest('.checkbox-item').classList.contains('license-locked'));
+    const allChecked = boxes.every(b => b.checked);
+    boxes.forEach(b => b.checked = !allChecked);
+    updateEffortTotal();
+}
+
+function updateLicenseGating() {
+    const lic = document.getElementById('license').value;
+    const hasPurview = lic.includes('Purview Suite');
+    const p2Section = document.getElementById('p2').closest('.form-section');
+    const p3Section = document.getElementById('p3').closest('.form-section');
+
+    // Remove section-level lock (no longer lock entire sections)
+    p2Section.classList.remove('locked');
+    p3Section.classList.remove('locked');
+
+    // Lock/unlock individual checkboxes based on data-license
+    document.querySelectorAll('.checkbox-group input[type="checkbox"][data-license="purview"]').forEach(cb => {
+        const item = cb.closest('.checkbox-item');
+        if (hasPurview || !lic) {
+            item.classList.remove('license-locked');
+        } else {
+            item.classList.add('license-locked');
+            cb.checked = false;
+        }
+    });
+
+    // Show/hide the banner in P2/P3 based on whether any items are locked
+    const p2HasLocked = p2Section.querySelector('.checkbox-item.license-locked');
+    const p3HasLocked = p3Section.querySelector('.checkbox-item.license-locked');
+    const p2Banner = p2Section.querySelector('.license-lock-banner');
+    const p3Banner = p3Section.querySelector('.license-lock-banner');
+    if (p2Banner) p2HasLocked ? p2Banner.classList.add('visible') : p2Banner.classList.remove('visible');
+    if (p3Banner) p3HasLocked ? p3Banner.classList.add('visible') : p3Banner.classList.remove('visible');
+
+    updateEffortTotal();
+}
+
+function parseEffort(effortStr) {
+    const m = effortStr.match(/(\d+)[–\-](\d+)/);
+    if (m) return [parseInt(m[1]), parseInt(m[2])];
+    const s = effortStr.match(/(\d+)\+/);
+    if (s) return [parseInt(s[1]), parseInt(s[1])];
+    const n = effortStr.match(/(\d+)/);
+    if (n) return [parseInt(n[1]), parseInt(n[1])];
+    return [0, 0];
+}
+
+function updateEffortTotal() {
+    const checked = document.querySelectorAll('.checkbox-group input[type="checkbox"][data-tier]:checked');
+    let lo = 0, hi = 0;
+    checked.forEach(b => {
+        const [l, h] = parseEffort(b.dataset.effort);
+        lo += l; hi += h;
+    });
+    const summary = document.getElementById('effortSummary');
+    const range = document.getElementById('effortRange');
+    if (lo === 0) {
+        summary.style.display = 'none';
+    } else {
+        summary.style.display = 'block';
+        range.textContent = lo === hi ? lo + ' hours' : lo + '–' + hi + ' hours';
+    }
+}
+
+// Wire up live effort calculation
+document.querySelectorAll('.checkbox-group input[type="checkbox"][data-tier]').forEach(b => {
+    b.addEventListener('change', updateEffortTotal);
+});
+
+function getServices() {
+    return [...document.querySelectorAll('.checkbox-group input[type="checkbox"][data-tier]:checked')]
+        .map(b => ({ label: b.value, effort: b.dataset.effort, tier: b.dataset.tier }));
+}
+
+function updateManagedServicesGating() {
+    const enabled = document.getElementById('engType_managed').checked;
+    ['ms_monitor_item', 'ms_tuning_item', 'ms_incidents_item'].forEach(itemId => {
+        const item = document.getElementById(itemId);
+        if (!item) return;
+        const cb = item.querySelector('input[type="checkbox"]');
+        if (enabled) {
+            item.classList.remove('ms-gated');
+            cb.disabled = false;
+        } else {
+            item.classList.add('ms-gated');
+            cb.disabled = true;
+            cb.checked = false;
+        }
+    });
+}
+
+function getManagedServices() {
+    const items = [];
+    if (document.getElementById('ms_monitor').checked) items.push('Monthly health monitoring: MIP label coverage, auto-labeling effectiveness, DLP policy match rates, false positive trends, and user compliance');
+    if (document.getElementById('ms_tuning').checked) items.push('Quarterly policy tuning: sensitivity label policies, SITs, auto-labeling rules, and DLP policies');
+    if (document.getElementById('ms_incidents').checked) items.push('Priority incident response support for data security events including mislabeled content, DLP policy violations, and policy exception requests');
+    return items;
+}
+
+function fmtDate(v) {
+    if (!v) return '[Start Date TBD]';
+    const d = new Date(v + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function rows(items) {
+    return items.map(s => `<tr><td>${s.label}</td><td>${s.effort}</td></tr>`).join('');
+}
+
+function li(items) {
+    return items.map(s => `<li>${s}</li>`).join('');
+}
+
+function esc(v) {
+    return String(v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function phase(n, title, items, timespan) {
+    return `<tr><td><strong>Phase ${n}: ${title}</strong></td><td><ul style="margin:0;padding-left:16px;">${items.map(i => '<li>' + i + '</li>').join('')}</ul></td><td>${timespan}</td></tr>`;
+}
+
+function generateSOW() {
+    const partner  = esc(document.getElementById('partnerName').value.trim() || '[Partner Company]');
+    const customer = esc(document.getElementById('customerName').value.trim() || '[Customer Name]');
+    const prepBy   = esc(document.getElementById('preparedBy').value.trim() || '[Author]');
+    const start    = esc(fmtDate(document.getElementById('startDate').value));
+    const duration = esc(document.getElementById('duration').value || '[Duration TBD]');
+    const users    = esc(document.getElementById('userCount').value || '[User Count TBD]');
+    const lic      = esc(document.getElementById('license').value || '[License TBD]');
+    const industry = esc(document.getElementById('industry').value || '[Industry]');
+    const maturity    = esc(document.getElementById('maturity').value || '[MIP Maturity TBD]');
+    const dlpMaturity = esc(document.getElementById('dlpMaturity').value || '[DLP Maturity TBD]');
+    const engTypes = [];
+    if (document.getElementById('engType_deploy').checked) engTypes.push('One-Time Deployment');
+    if (document.getElementById('engType_hypercare').checked) engTypes.push('30-Day Hypercare');
+    if (document.getElementById('engType_managed').checked) engTypes.push('Ongoing Managed Services');
+    const engType = esc(engTypes.length ? engTypes.join(' + ') : '[Delivery Model TBD]');
+
+    const services = getServices();
+    const managed  = getManagedServices();
+    const today    = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    if (services.length === 0) {
+        alert('Please select at least one Data Security service to include in the SOW.');
+        return;
+    }
+
+    const t1 = services.filter(s => s.tier === '1');
+    const t2 = services.filter(s => s.tier === '2');
+    const t3 = services.filter(s => s.tier === '3');
+
+    // Map duration to total weeks for dynamic timeline
+    const durationWeeks = { '2 weeks': 2, '4 weeks (1 month)': 4, '6 weeks': 6, '8 weeks (2 months)': 8, '3 months': 12, '>6 months (Managed Services)': 24 };
+    const totalWeeks = durationWeeks[document.getElementById('duration').value] || 4;
+
+    // Count active phases (Discovery + selected tiers + Handover)
+    const activePhases = 1 + (t1.length ? 1 : 0) + (t2.length ? 1 : 0) + (t3.length ? 1 : 0) + 1;
+
+    // Allocate: Discovery = 1 share, each tier = 2 shares, Handover = 1 share
+    const shares = [];
+    shares.push(1); // Discovery
+    if (t1.length) shares.push(2);
+    if (t2.length) shares.push(2);
+    if (t3.length) shares.push(2);
+    shares.push(1); // Handover
+    const totalShares = shares.reduce((a, b) => a + b, 0);
+
+    // Distribute weeks proportionally
+    let weekSlots = shares.map(s => Math.max(1, Math.round(s / totalShares * totalWeeks)));
+    // Adjust to fit total
+    const diff = totalWeeks - weekSlots.reduce((a, b) => a + b, 0);
+    if (diff !== 0) weekSlots[Math.floor(weekSlots.length / 2)] += diff;
+
+    // Build week range labels
+    let weekStart = 1;
+    const weekLabels = weekSlots.map(w => {
+        const end = weekStart + w - 1;
+        const label = w === 1 ? `Week ${weekStart}` : `Week ${weekStart}–${end}`;
+        weekStart = end + 1;
+        return label;
+    });
+
+    let phaseNum = 1;
+    let slotIdx = 0;
+    let timelineRows = `<tr><td><strong>Phase ${phaseNum++}: Discovery &amp; Design</strong></td><td>Kick-off, requirements gathering, label taxonomy design, environment assessment</td><td>${weekLabels[slotIdx++]}</td></tr>`;
+    if (t1.length) timelineRows += phase(phaseNum++, 'Foundation Deployment', t1.map(s => s.label), weekLabels[slotIdx++]);
+    if (t2.length) timelineRows += phase(phaseNum++, 'Intermediate Capabilities', t2.map(s => s.label), weekLabels[slotIdx++]);
+    if (t3.length) timelineRows += phase(phaseNum++, 'Advanced Capabilities', t3.map(s => s.label), weekLabels[slotIdx++]);
+    timelineRows += `<tr><td><strong>Phase ${phaseNum}: Testing &amp; Handover</strong></td><td>UAT, end-user training, documentation handover, project closure</td><td>${weekLabels[slotIdx]}</td></tr>`;
+
+    // Build dynamic Out of Scope based on unselected services
+    const selectedLabels = services.map(s => s.label);
+    const hasService = (keyword) => selectedLabels.some(l => l.toLowerCase().includes(keyword.toLowerCase()));
+
+    let outOfScope = [];
+    // Always out of scope (separate Purview workloads)
+    outOfScope.push('Insider Risk Management and Communication Compliance');
+    outOfScope.push('Microsoft Defender for Cloud Apps (MDCA) integration');
+    outOfScope.push('eDiscovery, Records Management, and Audit Premium');
+    outOfScope.push('Microsoft Entra ID (Azure AD) conditional access or identity configuration');
+
+    // Conditionally out of scope based on unselected services
+    if (!hasService('auto-labeling')) outOfScope.push('Automated labeling policies (client-side and service-side)');
+    if (!hasService('trainable classifiers')) outOfScope.push('Trainable classifier configuration');
+    if (!hasService('custom sensitive information types')) outOfScope.push('Custom sensitive information type (SIT) development');
+    if (!hasService('retention polic')) outOfScope.push('Retention policies and retention labels');
+    if (!hasService('container label') && !hasService('Teams, SharePoint sites')) outOfScope.push('Container-level sensitivity labels for Teams, SharePoint sites, and Microsoft 365 Groups');
+    if (!hasService('Endpoint')) outOfScope.push('Endpoint DLP for Windows and macOS devices');
+    if (!hasService('Teams chat')) outOfScope.push('DLP for Microsoft Teams chat and channel messages');
+    if (!hasService('Copilot')) outOfScope.push('DLP for Microsoft 365 Copilot interactions');
+    if (!hasService('DSPM') && !hasService('Data Security Posture')) outOfScope.push('Data Security Posture Management (DSPM) for AI');
+    if (!hasService('on-premises scanner') && !hasService('AIP')) outOfScope.push('On-premises file scanning (AIP Unified Labeling Scanner)');
+    if (!hasService('Double Key Encryption') && !hasService('DKE')) outOfScope.push('Double Key Encryption (DKE)');
+    if (!hasService('Azure Rights Management') && !hasService('RMS')) outOfScope.push('Label-based encryption and Azure Rights Management (RMS) permissions');
+    if (!hasService('MIP SDK')) outOfScope.push('MIP SDK integration with custom or third-party applications');
+
+    // Always out of scope
+    outOfScope.push('Custom development or scripting beyond MIP and DLP configuration tasks');
+    outOfScope.push('Network, infrastructure, or endpoint configuration changes not related to selected services');
+    if (!managed.length) outOfScope.push('End-user helpdesk support post-deployment');
+
+    const html = `
+    <div class="sow-toolbar">
+        <button class="btn-action primary" onclick="window.print()">🖨 Print / Save as PDF</button>
+        <button class="btn-action" onclick="copySOW()">📋 Copy to Clipboard</button>
+        <button class="btn-action" onclick="exportWord()">📄 Export to Word</button>
+        <button class="btn-action" onclick="exportJSON()">📦 Export JSON</button>
+        <button class="btn-action" onclick="resetView()">← Back to Form</button>
+    </div>
+
+    <div class="sow-paper" id="sowContent">
+
+        <div class="sow-header">
+            <div class="top-row">
+                <div>
+                    <div class="partner-name">${partner}</div>
+                </div>
+            </div>
+            <div class="sow-title">Statement of Work</div>
+            <div class="sow-subtitle">Microsoft Purview Information Protection (MIP) &amp; Data Loss Prevention (DLP)</div>
+            <div class="sow-meta-grid">
+                <div><span class="meta-label">Prepared for: </span><span class="meta-value">${customer}</span></div>
+                <div><span class="meta-label">Prepared by: </span><span class="meta-value">${partner}</span></div>
+                <div><span class="meta-label">Date prepared: </span><span class="meta-value">${today}</span></div>
+                <div><span class="meta-label">Author: </span><span class="meta-value">${prepBy}</span></div>
+                <div><span class="meta-label">Estimated start: </span><span class="meta-value">${start}</span></div>
+                <div><span class="meta-label">Engagement duration: </span><span class="meta-value">${duration}</span></div>
+                <div><span class="meta-label">Delivery model: </span><span class="meta-value">${engType}</span></div>
+                <div><span class="meta-label">Industry: </span><span class="meta-value">${industry}</span></div>
+            </div>
+        </div>
+
+        <div class="sow-section">
+            <h2>1. Executive Summary</h2>
+            <p>This Statement of Work describes the professional services to be delivered by <strong>${partner}</strong> to <strong>${customer}</strong> for the deployment and configuration of <strong>Microsoft Purview Information Protection (MIP) and Data Loss Prevention (DLP)</strong>. The engagement is designed to enable ${customer} to classify, label, protect, and govern sensitive data across Microsoft 365 services in alignment with Microsoft's recommended Data Security Deployment guidance.</p>
+            <br>
+            <p>${customer} operates in the <strong>${industry}</strong> sector with approximately <strong>${users}</strong> licensed on <strong>${lic}</strong>. Current MIP maturity: <em>${maturity}</em>. Current DLP maturity: <em>${dlpMaturity}</em>. This engagement will accelerate ${customer}'s data security posture by delivering structured, phased MIP and DLP capabilities that reduce the risk of data oversharing, enable regulatory compliance, and establish measurable data protection controls.</p>
+        </div>
+
+        <div class="sow-section">
+            <h2>2. Objectives</h2>
+            <ul>
+                <li>Establish a consistent, enforceable data classification framework using Microsoft Purview sensitivity labels</li>
+                <li>Reduce the risk of sensitive data oversharing and unauthorized access across Microsoft 365</li>
+                <li>Deploy Data Loss Prevention policies to detect and restrict the movement of sensitive content across email, cloud storage, endpoints, and collaboration tools</li>
+                <li>Enable labeling and protection policies for content at rest and in transit</li>
+                <li>Provide end-users with a guided, low-friction labeling experience in Office apps</li>
+                <li>Build a measurable, auditable foundation for ongoing compliance and data governance</li>
+            </ul>
+        </div>
+
+        <div class="sow-section">
+            <h2>3. Scope of Services</h2>
+            <p>The following Microsoft Purview Data Security activities are included in this engagement:</p>
+
+            ${t1.length ? `<h3>Foundation Services: Priority 1 <span class="tier-tag tier-1" style="vertical-align:middle;">Required</span></h3>
+            <table class="sow-table"><thead><tr><th>Service / Activity</th><th>Estimated Effort</th></tr></thead><tbody>${rows(t1)}</tbody></table>` : ''}
+
+            ${t2.length ? `<h3>Intermediate Services: Priority 2 <span class="tier-tag tier-2" style="vertical-align:middle;">Recommended</span></h3>
+            <table class="sow-table"><thead><tr><th>Service / Activity</th><th>Estimated Effort</th></tr></thead><tbody>${rows(t2)}</tbody></table>` : ''}
+
+            ${t3.length ? `<h3>Advanced Services: Priority 3 <span class="tier-tag tier-3" style="vertical-align:middle;">Advanced</span></h3>
+            <table class="sow-table"><thead><tr><th>Service / Activity</th><th>Estimated Effort</th></tr></thead><tbody>${rows(t3)}</tbody></table>` : ''}
+
+            ${managed.length ? `<h3>Ongoing Managed Services</h3><ul>${li(managed)}</ul>` : ''}
+        </div>
+
+        <div class="sow-section">
+            <h2>4. Deliverables</h2>
+            <table class="sow-table">
+                <thead><tr><th>Deliverable</th><th>Description</th><th>Format</th></tr></thead>
+                <tbody>
+                    <tr><td>MIP Design Document</td><td>Label taxonomy, policy decisions, and configuration rationale</td><td>Word / PDF</td></tr>
+                    <tr><td>Sensitivity Label Configuration</td><td>Fully configured labels and policies in Microsoft Purview portal</td><td>Live Environment</td></tr>
+                    <tr><td>Policy Deployment Record</td><td>Documentation of deployed label policies and target groups</td><td>Word / PDF</td></tr>
+                    <tr><td>End-User Training Materials</td><td>Training deck and quick-reference guide for sensitivity labeling</td><td>PowerPoint / PDF</td></tr>
+                    ${hasService('auto-labeling') ? '<tr><td>Auto-Labeling Policy Report</td><td>Simulation results and enforcement policy metrics</td><td>Excel / PDF</td></tr>' : ''}
+                    ${managed.length ? '<tr><td>Ongoing Reports</td><td>Monthly / quarterly data security health and compliance summaries</td><td>PDF / Email</td></tr>' : ''}
+                    <tr><td>Project Closure Report</td><td>Summary of completed work, known gaps, and recommended next steps</td><td>Word / PDF</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sow-section">
+            <h2>5. Project Timeline</h2>
+            <table class="sow-table">
+                <thead><tr><th>Phase</th><th>Key Activities</th><th>Duration</th></tr></thead>
+                <tbody>${timelineRows}</tbody>
+            </table>
+            <p style="margin-top:10px;font-size:12px;color:#605e5c;"><em>Note: Timeline is indicative. Actual duration may vary based on environment complexity, customer availability, and number of in-scope services.</em></p>
+        </div>
+
+        <div class="sow-section">
+            <h2>6. Partner Responsibilities (${partner})</h2>
+            <ul>
+                <li>Provide a certified Microsoft Purview / MIP engineer for the duration of the engagement</li>
+                <li>Lead all technical configuration activities within the Microsoft Purview compliance portal</li>
+                <li>Develop and present the label taxonomy design for customer approval before deployment</li>
+                <li>Deliver end-user training sessions and provide all training materials</li>
+                <li>Perform testing and validation of label policies prior to production go-live</li>
+                <li>Produce and deliver all project deliverables listed in Section 4</li>
+                <li>Assign a dedicated project manager as the single point of contact throughout the engagement</li>
+                <li>Proactively communicate blockers, licensing gaps, or scope risks to the customer</li>
+            </ul>
+        </div>
+
+        <div class="sow-section">
+            <h2>7. Customer Responsibilities (${customer})</h2>
+            <ul>
+                <li>Designate a project sponsor and technical point of contact for the duration of the engagement</li>
+                <li>Provide Global Administrator or Compliance Administrator access to the Microsoft Purview portal</li>
+                <li>Review and approve the label taxonomy design before deployment commences</li>
+                <li>Ensure all prerequisite licenses (${lic}) are provisioned prior to kick-off</li>
+                <li>Make key stakeholders available for requirements workshops and end-user training</li>
+                <li>Review and approve deliverables within 5 business days of receipt</li>
+                <li>Communicate regulatory, compliance, or business requirements that must be reflected in the label design</li>
+            </ul>
+        </div>
+
+        <div class="sow-section">
+            <h2>8. Assumptions &amp; Dependencies</h2>
+            <ul>
+                <li>${customer} holds active ${lic} licenses for all ${users} in scope prior to engagement start</li>
+                <li>Microsoft 365 tenant is in a healthy, supported configuration with no outstanding service health incidents</li>
+                <li>Required administrative access will be granted within 2 business days of project kick-off</li>
+                <li>Customer stakeholders will be available for scheduled sessions with at least 3 business days' notice</li>
+                ${(maturity.includes('Greenfield') && dlpMaturity.includes('Greenfield')) ? '' : '<li>Any existing sensitivity labels or DLP policies will be documented and reviewed in Phase 1 before changes are applied</li>'}
+                <li>This engagement is scoped to <strong>Microsoft Purview Information Protection (MIP) and Data Loss Prevention (DLP)</strong>. Insider Risk Management, eDiscovery, and other Purview workloads are out of scope unless agreed separately</li>
+            </ul>
+        </div>
+
+        <div class="sow-section">
+            <h2>9. Out of Scope</h2>
+            <ul>
+                ${outOfScope.map(item => '<li>' + item + '</li>').join('\n                ')}
+            </ul>
+            <div class="notice-box">
+                📌 Any work identified during the engagement that falls outside this defined scope will be addressed through a separate change request or follow-on Statement of Work.
+            </div>
+        </div>
+
+        <div class="sow-section">
+            <h2>10. Investment Summary</h2>
+            <table class="sow-table">
+                <thead><tr><th>Service Component</th><th>Investment (USD)</th><th>Notes</th></tr></thead>
+                <tbody>
+                    <tr><td>Professional Services: Deployment &amp; Configuration</td><td>[$ Add Amount]</td><td>Fixed fee or Time &amp; Materials, per agreement</td></tr>
+                    <tr><td>Training &amp; Adoption</td><td>[$ Add Amount]</td><td>Included or billed separately per agreement</td></tr>
+                    ${managed.length ? '<tr><td>Ongoing Managed Services</td><td>[$ Add Monthly Fee]</td><td>Monthly recurring</td></tr>' : ''}
+                    <tr><td><strong>Total Engagement Value</strong></td><td><strong>[$ Total]</strong></td><td></td></tr>
+                </tbody>
+            </table>
+            <div class="notice-box">
+                💡 Pricing is indicative and subject to final agreement. Microsoft 365 license costs are not included. ${customer} is responsible for all licensing. Volume discounts and partner incentives may apply.
+            </div>
+        </div>
+
+        <div class="sow-section" style="margin-top:40px;padding-top:24px;border-top:2px solid #0078d4;">
+            <h2>11. Acceptance &amp; Sign-Off</h2>
+            <p>By signing below, both parties agree to the scope, deliverables, responsibilities, and terms described in this Statement of Work.</p>
+            <div class="sig-grid">
+                <div class="sig-block">
+                    <div class="sig-party">${partner}</div>
+                    <p>Authorized Representative</p>
+                    <div class="sig-line">Signature</div>
+                    <br>
+                    <div class="sig-line">Printed Name</div>
+                    <br>
+                    <div class="sig-line">Title</div>
+                    <br>
+                    <div class="sig-line">Date</div>
+                </div>
+                <div class="sig-block">
+                    <div class="sig-party">${customer}</div>
+                    <p>Authorized Representative</p>
+                    <div class="sig-line">Signature</div>
+                    <br>
+                    <div class="sig-line">Printed Name</div>
+                    <br>
+                    <div class="sig-line">Title</div>
+                    <br>
+                    <div class="sig-line">Date</div>
+                </div>
+            </div>
+        </div>
+
+    </div>`;
+
+    document.getElementById('sowDoc').innerHTML = html;
+    document.getElementById('sowDoc').classList.add('visible');
+    document.getElementById('placeholder').style.display = 'none';
+    document.querySelector('.output-panel').scrollTop = 0;
+}
+
+function resetView() {
+    document.getElementById('sowDoc').classList.remove('visible');
+    document.getElementById('placeholder').style.display = 'flex';
+}
+
+function resetAll() {
+    if (!confirm('Clear all fields and selections?')) return;
+
+    ['partnerName', 'customerName', 'preparedBy', 'startDate'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+
+    ['duration', 'userCount', 'license', 'industry', 'maturity', 'dlpMaturity'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+
+    ['engType_deploy', 'engType_hypercare', 'engType_managed'].forEach(id => {
+        document.getElementById(id).checked = false;
+    });
+    updateManagedServicesGating();
+
+    document.querySelectorAll('.checkbox-group input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+
+    document.getElementById('jsonFileInput').value = '';
+
+    updateLicenseGating();
+    updateEffortTotal();
+    resetView();
+}
+
+function exportWord() {
+    const content = document.getElementById('sowContent').innerHTML;
+    const customer = document.getElementById('customerName').value.trim() || 'Customer';
+    const styles = `
+        <style>
+            body { font-family: 'Segoe UI', Calibri, sans-serif; color: #323130; padding: 40px; }
+            .sow-header { border-bottom: 3px solid #0078d4; padding-bottom: 24px; margin-bottom: 32px; }
+            .partner-name { font-size: 20px; font-weight: 700; color: #323130; }
+            .sow-title { font-size: 26px; font-weight: 700; color: #0078d4; margin: 20px 0 6px; }
+            .sow-subtitle { font-size: 14px; color: #605e5c; }
+            .sow-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; background: #f3f2f1; padding: 16px; }
+            .meta-label { font-weight: 700; color: #323130; font-size: 12px; }
+            .meta-value { color: #605e5c; font-size: 12px; }
+            .sow-section { margin-bottom: 28px; }
+            .sow-section h2 { font-size: 15px; font-weight: 700; color: #0078d4; border-left: 3px solid #0078d4; padding-left: 10px; margin-bottom: 12px; }
+            .sow-section h3 { font-size: 13px; font-weight: 700; color: #323130; margin: 14px 0 6px; }
+            .sow-section p { font-size: 13px; line-height: 1.65; color: #323130; }
+            .sow-section ul { list-style: disc; padding-left: 20px; }
+            .sow-section ul li { font-size: 13px; line-height: 1.65; color: #323130; padding: 3px 0; }
+            .sow-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+            .sow-table th { background: #0078d4; color: white; padding: 8px 12px; text-align: left; font-weight: 600; }
+            .sow-table td { padding: 8px 12px; border-bottom: 1px solid #edebe9; color: #323130; vertical-align: top; }
+            .sow-table tr:nth-child(even) td { background: #f9f8f7; }
+            .notice-box { background: #eff6fc; border: 1px solid #c7e0f4; border-left: 4px solid #0078d4; padding: 12px 14px; font-size: 12px; color: #323130; line-height: 1.5; margin-top: 12px; }
+            .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 20px; }
+            .sig-block { font-size: 12px; line-height: 1.8; }
+            .sig-block .sig-party { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+            .sig-line { border-top: 1px solid #323130; padding-top: 4px; margin-top: 20px; }
+        </style>`;
+    const doc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8">${styles}</head>
+    <body>${content}</body></html>`;
+    const blob = new Blob([doc], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `MIP-SOW-${customer.replace(/[^a-zA-Z0-9]/g, '_')}.doc`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function copySOW() {
+    const el = document.getElementById('sowContent');
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    try {
+        document.execCommand('copy');
+        alert('SOW copied to clipboard. Paste into Word or your company template to finalize.');
+    } catch {
+        alert('Select all (Ctrl+A / Cmd+A) inside the document, then copy manually.');
+    }
+    window.getSelection().removeAllRanges();
+}
+
+function exportJSON() {
+    const data = {
+        exportDate: new Date().toISOString(),
+        engagement: {
+            partnerName: document.getElementById('partnerName').value.trim(),
+            customerName: document.getElementById('customerName').value.trim(),
+            preparedBy: document.getElementById('preparedBy').value.trim(),
+            startDate: document.getElementById('startDate').value,
+            duration: document.getElementById('duration').value,
+            deliveryModel: ['engType_deploy', 'engType_hypercare', 'engType_managed'].filter(id => document.getElementById(id).checked).map(id => id.replace('engType_', ''))
+        },
+        environment: {
+            userCount: document.getElementById('userCount').value,
+            license: document.getElementById('license').value,
+            industry: document.getElementById('industry').value,
+            maturity: document.getElementById('maturity').value,
+            dlpMaturity: document.getElementById('dlpMaturity').value
+        },
+        services: {
+            p1: [],
+            p2: [],
+            p3: []
+        },
+        managedServices: []
+    };
+
+    document.querySelectorAll('.checkbox-group input[type="checkbox"][data-tier]').forEach(cb => {
+        const item = {
+            label: cb.value,
+            effort: cb.dataset.effort,
+            license: cb.dataset.license,
+            selected: cb.checked,
+            locked: cb.closest('.checkbox-item').classList.contains('license-locked')
+        };
+        if (cb.dataset.tier === '1') data.services.p1.push(item);
+        else if (cb.dataset.tier === '2') data.services.p2.push(item);
+        else data.services.p3.push(item);
+    });
+
+    ['ms_monitor', 'ms_tuning', 'ms_incidents'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) data.managedServices.push({ id: id, label: el.closest('.checkbox-item').querySelector('.item-title').textContent, selected: el.checked });
+    });
+
+    const password = prompt('Enter a password to encrypt the exported JSON.\nYou will need this password to decrypt the file later.');
+    if (!password) return;
+
+    encryptAndDownload(data, password);
+}
+
+async function encryptAndDownload(data, password) {
+    try {
+        const enc = new TextEncoder();
+        const plaintext = enc.encode(JSON.stringify(data, null, 2));
+
+        // Generate random salt and IV
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+
+        // Derive key from password using PBKDF2
+        const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+        const key = await crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt']
+        );
+
+        // Encrypt
+        const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, plaintext);
+
+        // Package as JSON with base64-encoded components
+        const toBase64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+        const exported = {
+            encrypted: true,
+            algorithm: 'AES-256-GCM',
+            kdf: 'PBKDF2-SHA256-100k',
+            salt: toBase64(salt),
+            iv: toBase64(iv),
+            data: toBase64(ciphertext)
+        };
+
+        const blob = new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (data.engagement.customerName || 'sow').replace(/[^a-zA-Z0-9]/g, '_') + '_mip_sow.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        alert('Encryption failed: ' + err.message);
+    }
+}
+
+function importJSON(input) {
+    const file = input.files[0];
+    if (!file) return;
+    input.value = ''; // reset so same file can be re-imported
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const parsed = JSON.parse(e.target.result);
+
+            if (parsed.encrypted) {
+                const password = prompt('This file is encrypted.\nEnter the password to decrypt:');
+                if (!password) return;
+                const data = await decryptJSON(parsed, password);
+                applyFormState(data);
+            } else {
+                applyFormState(parsed);
+            }
+        } catch (err) {
+            alert('Import failed: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+}
+
+async function decryptJSON(encrypted, password) {
+    const fromBase64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+    const enc = new TextEncoder();
+    const dec = new TextDecoder();
+
+    const salt = fromBase64(encrypted.salt);
+    const iv = fromBase64(encrypted.iv);
+    const ciphertext = fromBase64(encrypted.data);
+
+    const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+    );
+
+    try {
+        const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+        return JSON.parse(dec.decode(plaintext));
+    } catch {
+        throw new Error('Incorrect password or corrupted file.');
+    }
+}
+
+function applyFormState(data) {
+    // Engagement details
+    if (data.engagement) {
+        document.getElementById('partnerName').value = data.engagement.partnerName || '';
+        document.getElementById('customerName').value = data.engagement.customerName || '';
+        document.getElementById('preparedBy').value = data.engagement.preparedBy || '';
+        document.getElementById('startDate').value = data.engagement.startDate || '';
+        document.getElementById('duration').value = data.engagement.duration || '';
+        if (Array.isArray(data.engagement.deliveryModel)) {
+            data.engagement.deliveryModel.forEach(key => {
+                const el = document.getElementById('engType_' + key);
+                if (el) el.checked = true;
+            });
+        }
+        updateManagedServicesGating();
+    }
+
+    // Environment
+    if (data.environment) {
+        document.getElementById('userCount').value = data.environment.userCount || '';
+        document.getElementById('license').value = data.environment.license || '';
+        document.getElementById('industry').value = data.environment.industry || '';
+        document.getElementById('maturity').value = data.environment.maturity || '';
+        document.getElementById('dlpMaturity').value = data.environment.dlpMaturity || '';
+    }
+
+    // Restore service checkboxes by matching value text
+    if (data.services) {
+        ['p1', 'p2', 'p3'].forEach(tier => {
+            const items = data.services[tier] || [];
+            const boxes = document.querySelectorAll('#' + tier + ' input[type="checkbox"][data-tier]');
+            boxes.forEach(cb => {
+                const match = items.find(i => i.label === cb.value);
+                cb.checked = match ? match.selected : false;
+            });
+        });
+    }
+
+    // Reset and restore managed services
+    ['ms_monitor', 'ms_tuning', 'ms_incidents'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = false;
+    });
+
+    if (data.managedServices) {
+        data.managedServices.forEach(ms => {
+            const el = document.getElementById(ms.id);
+            if (el) el.checked = ms.selected;
+        });
+    }
+
+    // Enforce lock state after restoring imported selections
+    updateLicenseGating();
+
+    updateEffortTotal();
+    alert('Form restored from imported file.');
+}
+
+function showDecisionTree() {
+    const lic = document.getElementById('license').value;
+    const hasPurview = lic.includes('Purview Suite');
+    const licLabel = lic || 'No license selected';
+
+    const tiers = [
+        { id: 'p1', name: 'Priority 1: Foundation', tag: 'tier-1' },
+        { id: 'p2', name: 'Priority 2: Intermediate', tag: 'tier-2' },
+        { id: 'p3', name: 'Priority 3: Advanced', tag: 'tier-3' }
+    ];
+
+    let html = `<div class="tree-legend">
+        <span><span class="status-dot included" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#107c10;"></span> Selected</span>
+        <span><span class="status-dot locked" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#d13438;"></span> Locked (needs Purview Suite)</span>
+        <span><span class="status-dot available" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#8a8886;"></span> Available (not selected)</span>
+    </div>`;
+
+    html += `<div class="tree-node root">
+        <div class="tree-toggle" onclick="this.querySelector('.arrow').classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed')">
+            <span class="arrow">&#9660;</span> <strong>License:</strong> ${licLabel}
+        </div>
+        <div class="tree-children">`;
+
+    tiers.forEach(tier => {
+        const boxes = document.querySelectorAll('#' + tier.id + ' input[type="checkbox"][data-tier]');
+        if (!boxes.length) return;
+
+        html += `<div class="tree-node">
+            <div class="tree-toggle" onclick="this.querySelector('.arrow').classList.toggle('collapsed');this.nextElementSibling.classList.toggle('collapsed')">
+                <span class="arrow">&#9660;</span> <span class="tier-tag ${tier.tag}">${tier.name}</span> (${[...boxes].filter(b => b.checked).length}/${boxes.length} selected)
+            </div>
+            <div class="tree-children">`;
+
+        boxes.forEach(cb => {
+            const locked = cb.closest('.checkbox-item').classList.contains('license-locked');
+            const selected = cb.checked;
+            const reqPurview = cb.dataset.license === 'purview';
+            let status, statusClass;
+            if (locked) { status = 'Locked'; statusClass = 'locked'; }
+            else if (selected) { status = 'Selected'; statusClass = 'included'; }
+            else { status = 'Available'; statusClass = 'available'; }
+
+            const title = cb.closest('.checkbox-item').querySelector('.item-title').textContent;
+            const licReq = reqPurview ? 'Purview Suite' : 'Business Premium';
+
+            html += `<div class="tree-leaf">
+                <span class="status-dot ${statusClass}"></span>
+                <span><strong>${title}</strong> &middot; ${cb.dataset.effort} &middot; Requires: ${licReq} &middot; <em>${status}</em></span>
+            </div>`;
+        });
+
+        html += `</div></div>`;
+    });
+
+    html += `</div></div>`;
+
+    document.getElementById('treeBody').innerHTML = html;
+    document.getElementById('treeOverlay').classList.add('open');
+}
+
+function acknowledgeDisclaimer() {
+    sessionStorage.setItem('disclaimerAcknowledged', 'true');
+    document.getElementById('disclaimerOverlay').style.display = 'none';
+}
+
+// Show disclaimer modal on load if not yet acknowledged this session
+function initCollapsibleSections() {
+    var sections = document.querySelectorAll('.form-panel .form-section');
+    sections.forEach(function(section, index) {
+        // Sections 1 & 2 (index 0, 1) stay open and non-collapsible
+        if (index < 2) return;
+
+        var h2 = section.querySelector('h2');
+        if (!h2) return;
+
+        section.classList.add('collapsible');
+
+        // Wrap all children after h2 into a section-body div
+        var body = document.createElement('div');
+        body.className = 'section-body';
+        var children = Array.from(section.children);
+        children.forEach(function(child) {
+            if (child !== h2) body.appendChild(child);
+        });
+        section.appendChild(body);
+
+        // Add chevron indicator to h2
+        var chevron = document.createElement('span');
+        chevron.className = 'chevron';
+        chevron.textContent = '▾';
+        h2.appendChild(chevron);
+
+        // Collapse sections 3–6 by default
+        body.classList.add('collapsed');
+        h2.classList.add('collapsed');
+
+        h2.addEventListener('click', function() {
+            body.classList.toggle('collapsed');
+            h2.classList.toggle('collapsed');
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (!sessionStorage.getItem('disclaimerAcknowledged')) {
+        document.getElementById('disclaimerOverlay').style.display = 'flex';
+    }
+    updateLicenseGating();
+    initCollapsibleSections();
+});
+</script>
+
+<!-- Disclaimer Modal -->
+<div class="disclaimer-overlay" id="disclaimerOverlay" style="display:none;">
+    <div class="disclaimer-modal">
+        <div class="disclaimer-modal-header">
+            <h2>⚠ Important Notice — Please Read Before Proceeding</h2>
+        </div>
+        <div class="disclaimer-modal-body">
+            <p><strong>Intended Use:</strong> This tool is designed for use by Microsoft partners and provides <strong>sample content only</strong>. This tool is provided as-is. It is not a Microsoft product. There is no warranty, no SLA, and engineering / product teams must not take dependencies on it.</p>
+            <p><strong>No Endorsement:</strong> Content from this tool should not be considered an endorsement from Microsoft for legal or contractual use.</p>
+            <p><strong>User Responsibility:</strong> By using this tool, you acknowledge that you are solely responsible for reviewing, validating, and adapting any generated content before use with customers. Content is used at your own discretion and risk.</p>
+            <div class="disclaimer-oii-notice">
+                🔒 <strong>OII Notice:</strong> The content generated by this tool may contain <strong>Organizational Identifiable Information (OII)</strong>, including company names, user counts, and engagement details entered into the form. Handle all generated documents in accordance with your organization's data handling and privacy policies.
+            </div>
+        </div>
+        <div class="disclaimer-modal-footer">
+            <button class="btn-acknowledge" onclick="acknowledgeDisclaimer()">I Acknowledge</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
