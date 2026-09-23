@@ -2,7 +2,7 @@
 applyTo: "**"
 authority: canonical
 applies-to: pull-requests, ado-work-items
-last-reviewed: 2026-06-24
+last-reviewed: 2026-09-23
 owners: SOWGenerator maintainers
 ---
 # PR & ADO Work Item Telemetry Tagging — MANDATORY
