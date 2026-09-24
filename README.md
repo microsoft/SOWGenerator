@@ -64,6 +64,11 @@ http://localhost:8080
 - The tool runs in the browser.
 - Optional analytics are loaded only after explicit user consent.
 - Do not enter sensitive or regulated data unless your organization approves this workflow.
+- Generated SOWs and exports may contain customer names, user counts, scope details, and other sensitive organizational information.
+- Word downloads, Print/Save as PDF output, and clipboard copies are plaintext. JSON exports are encrypted with a user-supplied passphrase, but decrypted content is still exposed when imported and viewed.
+- Because this is a static, unauthenticated client, it cannot enforce sensitivity labels, DLP, recipient restrictions, retention, access revocation, or deletion after a file is downloaded or copied.
+- Store, share, retain, and delete all downloaded or copied content according to your organization's Microsoft Purview, DLP, records management, and retention policies.
+- Microsoft Clarity is consent-gated on the current app, and the generated document and dialog surfaces are explicitly masked. The published archive does not initialize Clarity.
 
 ## Disclaimer
 

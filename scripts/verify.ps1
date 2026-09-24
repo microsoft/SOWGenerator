@@ -23,7 +23,7 @@ else {
 }
 
 Write-Host "== Browser smoke verification =="
-foreach ($command in 'node', 'npm', 'python') {
+foreach ($command in 'node', 'npm') {
     if (-not (Get-Command $command -ErrorAction SilentlyContinue)) {
         Write-Host "  MISSING TOOL: $command"
         $failures++

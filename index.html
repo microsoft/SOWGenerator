@@ -99,6 +99,7 @@
         .btn-action:hover { background: #f3f2f1; }
         .btn-action.primary { background: #0078d4; color: white; border-color: #0078d4; }
         .btn-action.primary:hover { background: #106ebe; }
+        .export-guidance { max-width: 820px; margin: 0 auto 20px; padding: 10px 14px; background: #fff4ce; border: 1px solid #f0d060; border-left: 4px solid #8a6914; border-radius: 0 4px 4px 0; font-size: 12px; line-height: 1.5; color: #323130; }
 
         .sow-paper { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.12); max-width: 820px; margin: 0 auto; padding: 60px; }
 
@@ -146,7 +147,7 @@
         .btn-acknowledge:hover { background: #106ebe; }
 
         @media print {
-            .header, .form-panel, .sow-toolbar, .tree-overlay { display: none !important; }
+            .header, .form-panel, .sow-toolbar, .export-guidance, .tree-overlay { display: none !important; }
             .main { display: block; }
             .output-panel { padding: 0; max-height: none; overflow: visible; }
             .sow-document { display: block !important; }
@@ -594,7 +595,7 @@
             <p>Fill in the form on the left and click <strong>Generate SOW Document</strong></p>
         </div>
 
-        <div class="sow-document" id="sowDoc">
+        <div class="sow-document" id="sowDoc" data-clarity-mask="true">
             <!-- Populated by JS -->
         </div>
 
@@ -603,11 +604,11 @@
 </div><!-- /main -->
 
 <!-- Decision Tree Overlay -->
-<div class="tree-overlay" id="treeOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+<div class="tree-overlay" id="treeOverlay" data-clarity-mask="true" role="dialog" aria-modal="true" aria-labelledby="treeDialogTitle" onclick="if(event.target===this)this.classList.remove('open')">
     <div class="tree-modal">
         <div class="tree-modal-header">
-            <h2>Service Decision Tree</h2>
-            <button class="tree-modal-close" onclick="document.getElementById('treeOverlay').classList.remove('open')">&times;</button>
+            <h2 id="treeDialogTitle">Service Decision Tree</h2>
+            <button class="tree-modal-close" aria-label="Close service decision tree" onclick="document.getElementById('treeOverlay').classList.remove('open')">&times;</button>
         </div>
         <div class="tree-modal-body" id="treeBody"></div>
     </div>
@@ -869,7 +870,11 @@ function generateSOW() {
         <button class="btn-action" onclick="resetView()">← Back to Form</button>
     </div>
 
-    <div class="sow-paper" id="sowContent">
+    <div class="export-guidance" role="note">
+        <strong>Sensitive data:</strong> Word, Print/PDF, and clipboard outputs are plaintext. JSON exports are encrypted, but this static app cannot enforce sensitivity labels, DLP, recipient restrictions, retention, or deletion after download. Store, share, and delete every output under your organization's Purview, DLP, and retention policies.
+    </div>
+
+    <div class="sow-paper" id="sowContent" data-clarity-mask="true">
 
         <div class="sow-header">
             <div class="top-row">
@@ -1141,6 +1146,229 @@ function copySOW() {
     window.getSelection().removeAllRanges();
 }
 
+const ENCRYPTION_V2 = Object.freeze({
+    version: 2,
+    algorithm: 'AES-256-GCM',
+    kdf: Object.freeze({
+        name: 'PBKDF2',
+        hash: 'SHA-256',
+        iterations: 600000,
+        keyLength: 256
+    })
+});
+
+const COMMON_PASSPHRASES = new Set([
+    '12345678901234',
+    'adminadminadmin',
+    'changemechangeme',
+    'correct horse battery staple',
+    'iloveyouiloveyou',
+    'letmeinletmein',
+    'password123456',
+    'passwordpassword',
+    'qwertyuiopasdf',
+    'thisisapassword',
+    'trustno1trustno1',
+    'welcome12345678'
+]);
+
+function normalizePassphraseForBlocklist(value) {
+    return value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function validateNewPassphrase(password) {
+    if (typeof password !== 'string' || !password.trim()) {
+        return 'Passphrase cannot be blank or whitespace only.';
+    }
+    if (Array.from(password).length < 14) {
+        return 'Passphrase must be at least 14 characters long.';
+    }
+    if (COMMON_PASSPHRASES.has(normalizePassphraseForBlocklist(password))) {
+        return 'That passphrase is commonly used or compromised. Choose a different, unique passphrase.';
+    }
+    return '';
+}
+
+function requestExportPassphrase() {
+    const password = prompt(
+        'Enter a unique passphrase to encrypt the exported JSON.\n' +
+        'Use at least 14 characters. You will need it to import the file later.\n\n' +
+        'The downloaded file may contain sensitive customer information; handle it under your organization\'s Purview, DLP, and retention policies.'
+    );
+    if (password === null) return null;
+
+    const validationError = validateNewPassphrase(password);
+    if (validationError) {
+        alert(validationError);
+        return null;
+    }
+
+    const confirmation = prompt('Confirm the export passphrase:');
+    if (confirmation === null) return null;
+    if (confirmation !== password) {
+        alert('Passphrases do not match. The export was not created.');
+        return null;
+    }
+
+    return password;
+}
+
+function createV2Metadata() {
+    return {
+        version: ENCRYPTION_V2.version,
+        encrypted: true,
+        algorithm: ENCRYPTION_V2.algorithm,
+        kdf: {
+            name: ENCRYPTION_V2.kdf.name,
+            hash: ENCRYPTION_V2.kdf.hash,
+            iterations: ENCRYPTION_V2.kdf.iterations,
+            keyLength: ENCRYPTION_V2.kdf.keyLength
+        }
+    };
+}
+
+function encodeV2AdditionalData(metadata) {
+    return new TextEncoder().encode(JSON.stringify({
+        version: metadata.version,
+        encrypted: metadata.encrypted,
+        algorithm: metadata.algorithm,
+        kdf: {
+            name: metadata.kdf.name,
+            hash: metadata.kdf.hash,
+            iterations: metadata.kdf.iterations,
+            keyLength: metadata.kdf.keyLength
+        }
+    }));
+}
+
+function bytesToBase64(bytes) {
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    }
+    return btoa(binary);
+}
+
+function decodeBase64Field(value, fieldName) {
+    const base64Pattern = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+    if (typeof value !== 'string' || !value || value.length % 4 !== 0 || !base64Pattern.test(value)) {
+        throw new Error(`Encrypted export field "${fieldName}" is not valid base64.`);
+    }
+    try {
+        return Uint8Array.from(atob(value), character => character.charCodeAt(0));
+    } catch {
+        throw new Error(`Encrypted export field "${fieldName}" is not valid base64.`);
+    }
+}
+
+function requireExactKeys(value, expectedKeys, label) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error(`${label} must be an object.`);
+    }
+    const actualKeys = Object.keys(value);
+    const missing = expectedKeys.filter(key => !Object.prototype.hasOwnProperty.call(value, key));
+    const unexpected = actualKeys.filter(key => !expectedKeys.includes(key));
+    if (missing.length || unexpected.length) {
+        const details = [];
+        if (missing.length) details.push(`missing ${missing.join(', ')}`);
+        if (unexpected.length) details.push(`unexpected ${unexpected.join(', ')}`);
+        throw new Error(`${label} has an invalid schema (${details.join('; ')}).`);
+    }
+}
+
+function validateEncodedLengths(salt, iv, ciphertext) {
+    if (salt.length !== 16) throw new Error('Encrypted export salt must be exactly 16 bytes.');
+    if (iv.length !== 12) throw new Error('Encrypted export IV must be exactly 12 bytes.');
+    if (ciphertext.length < 16) throw new Error('Encrypted export ciphertext is too short.');
+}
+
+function isEncryptedEnvelopeCandidate(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    return ['version', 'encrypted', 'algorithm', 'kdf', 'salt', 'iv', 'data']
+        .some(key => Object.prototype.hasOwnProperty.call(value, key));
+}
+
+function validateEncryptedEnvelope(envelope) {
+    if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
+        throw new Error('Encrypted export must be a JSON object.');
+    }
+
+    if (Object.prototype.hasOwnProperty.call(envelope, 'version')) {
+        if (envelope.version !== ENCRYPTION_V2.version) {
+            throw new Error(`Unsupported encrypted export version: ${String(envelope.version)}.`);
+        }
+        requireExactKeys(envelope, ['version', 'encrypted', 'algorithm', 'kdf', 'salt', 'iv', 'data'], 'Version 2 encrypted export');
+        if (envelope.encrypted !== true) throw new Error('Version 2 encrypted export must set "encrypted" to true.');
+        if (envelope.algorithm !== ENCRYPTION_V2.algorithm) {
+            throw new Error(`Unsupported encryption algorithm: ${String(envelope.algorithm)}.`);
+        }
+        requireExactKeys(envelope.kdf, ['name', 'hash', 'iterations', 'keyLength'], 'Version 2 KDF metadata');
+        if (envelope.kdf.name !== ENCRYPTION_V2.kdf.name ||
+            envelope.kdf.hash !== ENCRYPTION_V2.kdf.hash ||
+            envelope.kdf.iterations !== ENCRYPTION_V2.kdf.iterations ||
+            envelope.kdf.keyLength !== ENCRYPTION_V2.kdf.keyLength) {
+            throw new Error('Unsupported or unreasonable version 2 KDF parameters.');
+        }
+
+        const salt = decodeBase64Field(envelope.salt, 'salt');
+        const iv = decodeBase64Field(envelope.iv, 'iv');
+        const ciphertext = decodeBase64Field(envelope.data, 'data');
+        validateEncodedLengths(salt, iv, ciphertext);
+
+        return {
+            version: ENCRYPTION_V2.version,
+            metadata: createV2Metadata(),
+            iterations: ENCRYPTION_V2.kdf.iterations,
+            keyLength: ENCRYPTION_V2.kdf.keyLength,
+            salt: salt,
+            iv: iv,
+            ciphertext: ciphertext
+        };
+    }
+
+    requireExactKeys(envelope, ['encrypted', 'algorithm', 'kdf', 'salt', 'iv', 'data'], 'Legacy encrypted export');
+    if (envelope.encrypted !== true) throw new Error('Legacy encrypted export must set "encrypted" to true.');
+    if (envelope.algorithm !== 'AES-256-GCM') {
+        throw new Error(`Unsupported legacy encryption algorithm: ${String(envelope.algorithm)}.`);
+    }
+    if (envelope.kdf !== 'PBKDF2-SHA256-100k') {
+        throw new Error(`Unsupported legacy KDF: ${String(envelope.kdf)}.`);
+    }
+
+    const salt = decodeBase64Field(envelope.salt, 'salt');
+    const iv = decodeBase64Field(envelope.iv, 'iv');
+    const ciphertext = decodeBase64Field(envelope.data, 'data');
+    validateEncodedLengths(salt, iv, ciphertext);
+
+    return {
+        version: 1,
+        metadata: null,
+        iterations: 100000,
+        keyLength: 256,
+        salt: salt,
+        iv: iv,
+        ciphertext: ciphertext
+    };
+}
+
+async function deriveEncryptionKey(password, salt, iterations, keyLength, usage) {
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(password),
+        'PBKDF2',
+        false,
+        ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: salt, iterations: iterations, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: keyLength },
+        false,
+        [usage]
+    );
+}
+
 function exportJSON() {
     const data = {
         exportDate: new Date().toISOString(),
@@ -1185,7 +1413,7 @@ function exportJSON() {
         if (el) data.managedServices.push({ id: id, label: el.closest('.checkbox-item').querySelector('.item-title').textContent, selected: el.checked });
     });
 
-    const password = prompt('Enter a password to encrypt the exported JSON.\nYou will need this password to decrypt the file later.');
+    const password = requestExportPassphrase();
     if (!password) return;
 
     encryptAndDownload(data, password);
@@ -1196,32 +1424,33 @@ async function encryptAndDownload(data, password) {
         const enc = new TextEncoder();
         const plaintext = enc.encode(JSON.stringify(data, null, 2));
 
-        // Generate random salt and IV
         const salt = crypto.getRandomValues(new Uint8Array(16));
         const iv = crypto.getRandomValues(new Uint8Array(12));
+        const metadata = createV2Metadata();
 
-        // Derive key from password using PBKDF2
-        const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
-        const key = await crypto.subtle.deriveKey(
-            { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
-            keyMaterial,
-            { name: 'AES-GCM', length: 256 },
-            false,
-            ['encrypt']
+        const key = await deriveEncryptionKey(
+            password,
+            salt,
+            metadata.kdf.iterations,
+            metadata.kdf.keyLength,
+            'encrypt'
         );
 
-        // Encrypt
-        const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, plaintext);
+        const ciphertext = await crypto.subtle.encrypt(
+            {
+                name: 'AES-GCM',
+                iv: iv,
+                additionalData: encodeV2AdditionalData(metadata)
+            },
+            key,
+            plaintext
+        );
 
-        // Package as JSON with base64-encoded components
-        const toBase64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
         const exported = {
-            encrypted: true,
-            algorithm: 'AES-256-GCM',
-            kdf: 'PBKDF2-SHA256-100k',
-            salt: toBase64(salt),
-            iv: toBase64(iv),
-            data: toBase64(ciphertext)
+            ...metadata,
+            salt: bytesToBase64(salt),
+            iv: bytesToBase64(iv),
+            data: bytesToBase64(new Uint8Array(ciphertext))
         };
 
         const blob = new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' });
@@ -1246,10 +1475,11 @@ function importJSON(input) {
         try {
             const parsed = JSON.parse(e.target.result);
 
-            if (parsed.encrypted) {
-                const password = prompt('This file is encrypted.\nEnter the password to decrypt:');
-                if (!password) return;
-                const data = await decryptJSON(parsed, password);
+            if (isEncryptedEnvelopeCandidate(parsed)) {
+                const envelope = validateEncryptedEnvelope(parsed);
+                const password = prompt('This file is encrypted.\nEnter the passphrase to decrypt:');
+                if (password === null) return;
+                const data = await decryptJSON(envelope, password);
                 applyFormState(data);
             } else {
                 applyFormState(parsed);
@@ -1261,29 +1491,25 @@ function importJSON(input) {
     reader.readAsText(file);
 }
 
-async function decryptJSON(encrypted, password) {
-    const fromBase64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
-    const enc = new TextEncoder();
+async function decryptJSON(envelope, password) {
     const dec = new TextDecoder();
-
-    const salt = fromBase64(encrypted.salt);
-    const iv = fromBase64(encrypted.iv);
-    const ciphertext = fromBase64(encrypted.data);
-
-    const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
-    const key = await crypto.subtle.deriveKey(
-        { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
-        keyMaterial,
-        { name: 'AES-GCM', length: 256 },
-        false,
-        ['decrypt']
+    const key = await deriveEncryptionKey(
+        password,
+        envelope.salt,
+        envelope.iterations,
+        envelope.keyLength,
+        'decrypt'
     );
+    const algorithm = { name: 'AES-GCM', iv: envelope.iv };
+    if (envelope.version === ENCRYPTION_V2.version) {
+        algorithm.additionalData = encodeV2AdditionalData(envelope.metadata);
+    }
 
     try {
-        const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+        const plaintext = await crypto.subtle.decrypt(algorithm, key, envelope.ciphertext);
         return JSON.parse(dec.decode(plaintext));
     } catch {
-        throw new Error('Incorrect password or corrupted file.');
+        throw new Error('Incorrect passphrase, tampered metadata, or corrupted file.');
     }
 }
 
@@ -1458,10 +1684,10 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Disclaimer Modal -->
-<div class="disclaimer-overlay" id="disclaimerOverlay" style="display:none;">
+<div class="disclaimer-overlay" id="disclaimerOverlay" data-clarity-mask="true" role="dialog" aria-modal="true" aria-labelledby="disclaimerDialogTitle" style="display:none;">
     <div class="disclaimer-modal">
         <div class="disclaimer-modal-header">
-            <h2>⚠ Important Notice — Please Read Before Proceeding</h2>
+            <h2 id="disclaimerDialogTitle">⚠ Important Notice — Please Read Before Proceeding</h2>
         </div>
         <div class="disclaimer-modal-body">
             <p><strong>Intended Use:</strong> This tool is designed for use by Microsoft partners and provides <strong>sample content only</strong>. This tool is provided as-is. It is not a Microsoft product. There is no warranty, no SLA, and engineering / product teams must not take dependencies on it.</p>

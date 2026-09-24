@@ -32,8 +32,8 @@ pwsh scripts/verify.ps1
 ```
 The verify loop checks the basic HTML document and runs the Playwright browser smoke test. The
 test serves the static site locally and exercises analytics consent, form entry, SOW generation,
-encrypted JSON export, reset, and encrypted JSON import. Node.js, npm, Python, and the Playwright
-Chromium browser are required; the script installs locked npm dependencies and the browser.
+encrypted JSON export, reset, and encrypted JSON import. Node.js, npm, and the Playwright Chromium
+browser are required; the script installs locked npm dependencies and the browser.
 
 A change is done when `verify.ps1` passes and the affected page behavior has been reviewed.
 
